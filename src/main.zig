@@ -87,7 +87,8 @@ fn layoutSummary(in_buffer: *const r4os.abi.ProtocolBuffer, out_buffer: *r4os.ab
     _ = document_workspace.parse(input, .{ .content_type = "text/html;charset=utf-8" }) catch return result_malformed;
     stylesheet_workspace.reset();
     stylesheet_workspace.appendDocumentStyles(&document_workspace) catch |err| return cssError(err);
-    const stats = layout_workspace.reflow(&document_workspace, &stylesheet_workspace, .{ .width = 640, .height = 400 }) catch |err| return layoutError(err);
+    _ = layout_workspace.reflow(&document_workspace, &stylesheet_workspace, .{ .width = 640, .height = 400 }) catch |err| return layoutError(err);
+    const stats = layout_workspace.diagnosticStats();
     const out = outputBytes(out_buffer) orelse return result_bad_buffer;
     var len: usize = 0;
     if (!append(out, &len, "ops=") or
@@ -118,9 +119,11 @@ fn selftest(out_buffer: *r4os.abi.ProtocolBuffer) i32 {
     stylesheet_workspace.reset();
     stylesheet_workspace.appendDocumentStyles(&document_workspace) catch return result_limit;
     if (stylesheet_workspace.rule_count < 4) return result_malformed;
-    const narrow = layout_workspace.reflow(&document_workspace, &stylesheet_workspace, .{ .width = 280, .height = 160 }) catch return result_limit;
+    _ = layout_workspace.reflow(&document_workspace, &stylesheet_workspace, .{ .width = 280, .height = 160 }) catch return result_limit;
+    const narrow = layout_workspace.diagnosticStats();
     const narrow_hash = narrow.structural_hash;
-    const wide = layout_workspace.reflow(&document_workspace, &stylesheet_workspace, .{ .width = 640, .height = 300 }) catch return result_limit;
+    _ = layout_workspace.reflow(&document_workspace, &stylesheet_workspace, .{ .width = 640, .height = 300 }) catch return result_limit;
+    const wide = layout_workspace.diagnosticStats();
     if (narrow.render_ops < 6 or wide.render_ops < 6 or narrow_hash == wide.structural_hash) return result_malformed;
     return writeOut(out_buffer, "R4CSS selftest: OK parser=ok cascade=ok layout=ok reflow=ok render-list=ok");
 }
