@@ -20,3 +20,16 @@ Block-/Inlinefluss sowie einen begrenzten Flex- und Grid-Grundbestand.
 R4CSS liegt als R4P-Modul und SDK-Code im Userland. Weder Kernel noch R4DRAW
 kennen CSS, DOM oder Webseitenlayout. Die R4P-Komfortoperationen verwenden
 einen serialisierten, fest begrenzten Arbeitspuffer.
+
+Fortschreibung 0.90.75 - ProtocolInit2
+--------------------------------------
+R4CSS 0.1.6 verwendet SDK208 und den expliziten
+ProtocolApi2-/ProtocolContext2-Vertrag. ProtocolInit2 validiert die ganze
+erforderliche Callbackmenge vor der Rollenpublikation. registerRole und
+setStatus liefern ihre wirklichen Fehler an den Modulbesitzer zurueck.
+Die Operationskennungen und Byteformate sind beim jeweiligen HTTP-/HTML-/
+CSS-/JavaScriptbesitzer definiert. Quell- und Bereichsleihen gelten durch
+den synchronen Dispatch. R4JS bindet alloc/free aus der validierten echten
+Tabelle und behaelt sie innerhalb der zugelassenen Modul-/Dispatchlebensdauer.
+Die vorhandenen Fachorakel und echten Protokollaufrufe werden durch die
+Browserabnahme qualifiziert. API/ConsumerMigration.txt nennt die Reichweite.

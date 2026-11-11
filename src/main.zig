@@ -13,30 +13,29 @@ pub const result_malformed: i32 = -6;
 pub const result_limit: i32 = -8;
 pub const result_busy: i32 = -9;
 
-var protocol_api: ?*const r4os.r4dev.ProtocolApi = null;
 var workspace_busy: u8 = 0;
 var document_workspace: r4os.html.Document = .{};
 var stylesheet_workspace: r4os.css.Stylesheet = .{};
 var layout_workspace: r4os.web_layout.Layout = .{};
 
 comptime {
-    asm (r4os.r4dev.protocolEntriesAsm("r4css_init", "r4css_shutdown", "r4css_query", "r4css_dispatch"));
+    asm (r4os.technical2.protocolEntriesAsm("r4css_init", "r4css_shutdown", "r4css_query", "r4css_dispatch"));
 }
 
-export fn r4css_init(api: *const r4os.r4dev.ProtocolApi) callconv(.c) i32 {
-    protocol_api = api;
-    var ctx = r4os.r4dev.ProtocolContext.init(api);
+export fn r4css_init(api: *const r4os.r4dev.ProtocolApi2) callconv(.c) i32 {
+    var ctx = r4os.r4dev.ProtocolContext2.init(api);
+    if (!ctx.requires(.{ "register_role", "set_status" })) return r4os.abi.err_no_fn;
     ctx.logInfo("R4CSS.R4P init");
-    _ = ctx.registerRole("text.css", .data, 0);
-    _ = ctx.setStatus(.active, "CSS cascade and layout active");
-    return 0;
+    const registered = ctx.registerRole("text.css", .data, 0);
+    if (registered != 0) return registered;
+    const result = ctx.setStatus(.active, "CSS cascade and layout active");
+    return result;
 }
 
 export fn r4css_shutdown() callconv(.c) i32 {
     document_workspace.reset();
     stylesheet_workspace.reset();
     layout_workspace.reset(.{ .width = 1, .height = 1 });
-    protocol_api = null;
     return 0;
 }
 
